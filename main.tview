@@ -1,0 +1,36 @@
+package main
+
+import (
+	"fmt"
+	"github.com/rivo/tview"
+	"log"
+	"time"
+)
+
+func main() {
+	app := tview.NewApplication()
+	textView := setupTextView(app)
+	go showTime(textView)
+	app.SetRoot(textView, true)
+	if err := app.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func setupTextView(app *tview.Application) *tview.TextView {
+	textView := tview.NewTextView()
+	textView.SetScrollable(false)
+	textView.SetChangedFunc(func () {
+		app.Draw()
+	})
+	return textView
+}
+
+func showTime(text *tview.TextView) {
+	for {
+		cb_btc := NewCBRate("BTC")
+		text.Clear()
+		fmt.Fprint(text, cb_btc)
+		time.Sleep(10 * time.Second)
+	}
+}
