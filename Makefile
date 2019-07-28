@@ -11,3 +11,6 @@ clean:
 
 build:
 	$(GOBUILD)
+
+run:
+	./$(BINNAME)

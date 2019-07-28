@@ -22,7 +22,7 @@ func main() {
 	}
 
 	go refreshTime(g)
-	go refreshSideBarRate(g, []string{"BTC", "ETH", "BCH"})
+	go refreshSideBarRate(g, []string{"BTC", "ETH"})
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
@@ -35,19 +35,25 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprint(v, "")
+		if _, err := fmt.Fprint(v, ""); err != nil {
+			log.Fatalln(err)
+		}
 	}
 	if v, err := g.SetView("hello", 20, -1, maxX, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, "hello hello")
+		if _, err := fmt.Fprintln(v, "hello hello"); err != nil {
+			log.Fatalln(err)
+		}
 	}
 	if v, err := g.SetView("statusbar", -1, maxY-2, maxX, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, time.Now().Format(time.Stamp))
+		if _, err := fmt.Fprintln(v, time.Now().Format(time.Stamp)); err != nil {
+			log.Fatalln(err)
+		}
 	}
 	return nil
 }
@@ -61,7 +67,9 @@ func refreshTime(g *gocui.Gui) {
 				return err
 			}
 			v.Clear()
-			fmt.Fprintln(v, time.Now().Format(time.Stamp))
+			if _, err := fmt.Fprintln(v, time.Now().Format(time.Stamp)); err != nil {
+				log.Fatalln(err)
+			}
 			return nil
 		})
 	}
@@ -81,7 +89,9 @@ func refreshSideBarRate(g *gocui.Gui, coins []string) {
 			v.Clear()
 			for _, coin := range cbRates {
 				coin.RefreshRate()
-				fmt.Fprint(v, coin)
+				if _, err := fmt.Fprint(v, coin); err != nil {
+					log.Fatalln(err)
+				}
 			}
 			return nil
 		})
