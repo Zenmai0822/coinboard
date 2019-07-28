@@ -22,7 +22,7 @@ func main() {
 	}
 
 	go refreshTime(g)
-	go refreshRate(g, "BTC")
+	go refreshSideBarRate(g, []string{"BTC", "ETH", "BCH"})
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
@@ -67,20 +67,22 @@ func refreshTime(g *gocui.Gui) {
 	}
 }
 
-func refreshRate(g *gocui.Gui, coin string) {
-	coinRate := NewCBRate(coin)
-	coinRateTwo := NewCBRate("ETH")
+func refreshSideBarRate(g *gocui.Gui, coins []string) {
+	var cbRates []*CBRate
+	for _, c := range coins {
+		cbRates = append(cbRates, NewCBRate(c))
+	}
 	for {
 		g.Update(func(g *gocui.Gui) error {
 			v, err := g.View("rate")
 			if err != nil {
 				return err
 			}
-			coinRate.RefreshRate()
-			coinRateTwo.RefreshRate()
 			v.Clear()
-			fmt.Fprint(v, coinRate)
-			fmt.Fprint(v, coinRateTwo)
+			for _, coin := range cbRates {
+				coin.RefreshRate()
+				fmt.Fprint(v, coin)
+			}
 			return nil
 		})
 		time.Sleep(10 * time.Second)
