@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/preichenberger/go-coinbasepro"
 	"log"
 	"time"
 
@@ -21,8 +22,14 @@ func main() {
 		log.Panicln(err)
 	}
 
+	if err := g.SetKeybinding("", 'q', gocui.ModNone, quit); err != nil {
+		log.Panicln(err)
+	}
+
 	go refreshTime(g)
 	go refreshSideBarRate(g, []string{"BTC", "ETH"})
+	cbProClient := NewCBProClient(&SandboxApiConfig)
+	go refreshBalances(g, cbProClient)
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
@@ -39,7 +46,7 @@ func layout(g *gocui.Gui) error {
 			log.Fatalln(err)
 		}
 	}
-	if v, err := g.SetView("hello", 20, -1, maxX, maxY-2); err != nil {
+	if v, err := g.SetView("balance", 20, -1, maxX, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -92,6 +99,23 @@ func refreshSideBarRate(g *gocui.Gui, coins []string) {
 				if _, err := fmt.Fprint(v, coin); err != nil {
 					log.Fatalln(err)
 				}
+			}
+			return nil
+		})
+		time.Sleep(10 * time.Second)
+	}
+}
+
+func refreshBalances(g *gocui.Gui, c *coinbasepro.Client) {
+	for {
+		g.Update(func(g *gocui.Gui) error {
+			v, err := g.View("balance")
+			if err != nil {
+				return err
+			}
+			v.Clear()
+			if _, err := fmt.Fprint(v, getFormattedBalance(c)); err != nil {
+				log.Fatalln(err)
 			}
 			return nil
 		})

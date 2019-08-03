@@ -1,7 +1,8 @@
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
-BINNAME=cryptogo
+BINNAME=coinboard
+UPX=upx
 
 all: clean build
 
@@ -14,3 +15,7 @@ build:
 
 run:
 	./$(BINNAME)
+
+prod:
+	$(GOBUILD) -ldflags="-s -w"
+	$(UPX) $(BINNAME)
